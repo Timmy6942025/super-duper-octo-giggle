@@ -18,7 +18,7 @@ llm = GeminiLLM(
     model="gemini-2.5-flash-preview-05-20",
     temperature=0.0
 )
-qa_chain = ConversationalRetrievalChain.from_llm(llm, vectorstore.as_retriever())
+qa_chain = ConversationalRetrievalChain.from_llm(llm, vectorstore.as_retriever(search_kwargs={"k": 4}))
 chat_history = []
 
 @app.route('/')
