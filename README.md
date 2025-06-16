@@ -8,6 +8,7 @@ This will create the vector store. It will usually take 2-5 minutes, and you onl
 ctrl+c in terminal to stop the app
 
 models: 
+
 -embeddings model: all-MiniLM-L6-v2
 
 -executer model: Gemini-2.5-flash-preview-05-20
