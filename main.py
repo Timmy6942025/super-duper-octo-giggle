@@ -36,7 +36,7 @@ def ask():
     result = qa_chain({'question': question, 'chat_history': chat_history})
     answer = result['answer']
     chat_history.append((question, answer))
-    chat_history = chat_history[-5:]
+    chat_history = chat_history[-10:]
     return jsonify({'answer': answer})
 
 if __name__ == '__main__':
