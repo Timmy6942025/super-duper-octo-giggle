@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Through the Bible Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* --- Themed Variables --- */
+    :root {
+      --primary-color: #660000;
+      --secondary-color: #FCE4B1;
+      --background-color: #fffbf2; /* A lighter version of the secondary color */
+      --text-color: #3d2a00;
+      --sidebar-bg: #ffffff;
+    }
+
+    /* --- General Styles --- */
+    body {
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+    }
+
+    /* --- PDF Viewer --- */
+    #pdf-viewer {
+      flex: 1;
+      border-right: 1px solid #e0d5b9;
+      transition: flex 0.3s ease-in-out;
+    }
+
+    #pdf-viewer iframe {
+      border: none;
+    }
+
+    /* --- Sidebar --- */
+    #sidebar {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--sidebar-bg);
+      box-shadow: -2px 0 15px rgba(0, 0, 0, 0.05);
+      transition: width 0.3s ease-in-out;
+      overflow: hidden;
+    }
+
+    /* --- Toggle Button --- */
+    #toggle-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      align-self: flex-start;
+      margin: 12px 0 0 12px;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+
+    #toggle-btn:hover {
+      background-color: #f0ebe0;
+    }
+
+    #toggle-icon {
+      width: 24px;
+      height: 24px;
+      display: block;
+      transition: transform 0.3s ease-in-out;
+    }
+    
+    #toggle-icon.rotated {
+      transform: rotate(180deg);
+    }
+    
+    /* --- Chat Container --- */
+    #chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      background-color: var(--sidebar-bg);
+      overflow-y: hidden;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 8px; /* For scrollbar spacing */
+    }
+
+    /* --- Message Bubbles --- */
+    .msg-bubble {
+      max-width: 85%;
+      padding: 12px 18px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      word-wrap: break-word;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: var(--primary-color);
+      color: #ffffff;
+      border-bottom-right-radius: 5px;
+    }
+
+    .msg-ai {
+      align-self: flex-start;
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      border-bottom-left-radius: 5px;
+      font-weight: 500;
+    }
+
+    /* --- Input Area --- */
+    #input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid #e9ecef;
+    }
+
+    #user-input {
+      flex: 1;
+      padding: 12px 18px;
+      border: 1px solid #e0d5b9;
+      border-radius: 24px;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      background-color: var(--background-color);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #user-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(102, 0, 0, 0.1);
+    }
+
+    #send-btn {
+      background-color: var(--primary-color);
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, transform 0.1s;
+      color: white; /* Set icon color to white */
+    }
+
+    #send-btn:hover {
+      background-color: #4d0000; /* A darker shade of the primary color */
+    }
+
+    #send-btn:active {
+      transform: scale(0.95);
+    }
+    
+    #send-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div id="pdf-viewer">
+    <iframe src="/static/TTB.pdf" width="100%" height="100%"></iframe>
+  </div>
+  <div id="sidebar">
+    <button id="toggle-btn" title="Collapse sidebar">
+      <!-- Icon with themed color -->
+      <svg id="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 17L20 12L15 7" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 12H19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 5V19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div id="chat-container">
+      <div id="messages"></div>
+      <div id="input-row">
+        <input id="user-input" type="text" placeholder="Ask a question..." />
+        <button id="send-btn" title="Send">
+          <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.172 11L10.808 5.63605L12.222 4.22205L20 12L12.222 19.778L10.808 18.364L16.172 13H4V11H16.172Z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggle-btn');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const chatContainer = document.getElementById('chat-container');
+    const msgs = document.getElementById('messages');
+    const input = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    
+    let isCollapsed = false;
+
+    // --- Toggle Sidebar Functionality ---
+    toggleBtn.addEventListener('click', () => {
+      isCollapsed = !isCollapsed;
+
+      toggleIcon.classList.toggle('rotated');
+
+      if (isCollapsed) {
+        // --- Collapse the sidebar ---
+        sidebar.style.width = '60px';
+        chatContainer.style.display = 'none';
+        toggleBtn.title = 'Expand sidebar';
+      } else {
+        // --- Expand the sidebar ---
+        sidebar.style.width = '400px';
+        chatContainer.style.display = 'flex';
+        toggleBtn.title = 'Collapse sidebar';
+      }
+    });
+    
+    // --- Append a new message to the chat ---
+    function appendMessage(text, sender) {
+      const messageElement = document.createElement('div');
+      messageElement.className = `msg-bubble msg-${sender}`;
+      messageElement.textContent = text;
+      msgs.appendChild(messageElement);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    // --- Handle Sending a Message ---
+    async function sendMessage() {
+      const question = input.value.trim();
+      if (!question) return;
+
+      appendMessage(question, 'user');
+      input.value = '';
+      input.focus();
+
+      try {
+        const response = await fetch('/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: question })
+        });
+        const data = await response.json();
+        appendMessage(data.answer, 'ai');
+      } catch (error) {
+        console.error('Error:', error);
+        appendMessage('Sorry, something went wrong. Please try again.', 'ai');
+      }
+    }
+
+    // --- Event Listeners ---
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+  </script>
+</body>
+</html>
