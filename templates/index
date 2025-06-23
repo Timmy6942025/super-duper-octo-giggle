@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Through the Bible Chat</title>
+  <style>
+    body { margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', Arial, sans-serif; background: #f5f6fa; }
+    #pdf-viewer { flex: 3; border-right: 1px solid #ddd; }
+    #sidebar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.04);
+      min-width: 340px;
+      max-width: 420px;
+      transition: box-shadow 0.2s;
+    }
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 12px 12px 12px;
+      background: #f7f9fb;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    #messages {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+      overflow-y: auto;
+    }
+    .msg-bubble {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 1rem;
+      line-height: 1.5;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      margin-bottom: 2px;
+      word-break: break-word;
+      display: inline-block;
+    }
+    .msg-user {
+      align-self: flex-end;
+      background: linear-gradient(90deg, #007BFF 60%, #0056b3 100%);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .msg-ai {
+      align-self: flex-start;
+      background: #e9ecef;
+      color: #222;
+      border-bottom-left-radius: 4px;
+    }
+    #input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 0 0 8px 0;
+    }
+    #user-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 20px;
+      font-size: 1rem;
+      outline: none;
+      background: #fff;
+      transition: border 0.2s;
+    }
+    #user-input:focus {
+      border: 1.5px solid #007BFF;
+    }
+    #send-btn {
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      transition: background 0.2s;
+    }
+    #send-btn:hover {
+      background: #0056b3;
+    }
+    #toggle-btn {
+      background: none;
+      border: none;
+      color: #007BFF;
+      font-size: 1.5rem;
+      cursor: pointer;
+      align-self: flex-start;
+      margin: 10px 0 0 10px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    #toggle-btn:hover {
+      background: #e9ecef;
+    }
+  </style>
+</head>
+<body>
+  <div id="pdf-viewer">
+    <iframe src="/static/TTB.pdf" width="100%" height="100%"></iframe>
+  </div>
+
+  <div id="sidebar">
+    <button id="toggle-btn" title="Collapse sidebar">&#8592;</button>
+    <div id="chat-container">
+      <div id="messages"></div>
+      <div id="input-row">
+        <input id="user-input" type="text" placeholder="Ask a question..." />
+        <button id="send-btn" title="Send">&#9658;</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modern sidebar collapse/expand
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggle-btn');
+    let collapsed = false;
+    toggleBtn.onclick = () => {
+      collapsed = !collapsed;
+      if (collapsed) {
+        sidebar.style.maxWidth = '48px';
+        sidebar.style.minWidth = '48px';
+        document.getElementById('chat-container').style.display = 'none';
+        toggleBtn.innerHTML = '&#8594;';
+        toggleBtn.title = 'Expand sidebar';
+      } else {
+        sidebar.style.maxWidth = '420px';
+        sidebar.style.minWidth = '340px';
+        document.getElementById('chat-container').style.display = 'flex';
+        toggleBtn.innerHTML = '&#8592;';
+        toggleBtn.title = 'Collapse sidebar';
+      }
+    };
+
+    // Modern chat message bubbles
+    const msgs = document.getElementById('messages');
+    const input = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    function appendMessage(text, sender) {
+      const div = document.createElement('div');
+      div.className = 'msg-bubble ' + (sender === 'user' ? 'msg-user' : 'msg-ai');
+      div.textContent = text;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    sendBtn.onclick = async () => {
+      const q = input.value.trim();
+      if (!q) return;
+      appendMessage(q, 'user');
+      input.value = '';
+      // Call your existing backend endpoint
+      const res = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ question: q })
+      });
+      const data = await res.json();
+      appendMessage(data.answer, 'ai');
+    };
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') sendBtn.click();
+    });
+  </script>
+</body>
+</html>
