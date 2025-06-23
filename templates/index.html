@@ -178,16 +178,16 @@
   <div id="pdf-viewer">
     <iframe src="/static/TTB.pdf" width="100%" height="100%"></iframe>
   </div>
-  <div id="sidebar">
-    <button id="toggle-btn" title="Collapse sidebar">
+  <div id="sidebar" style="width: 60px;">
+    <button id="toggle-btn" title="Expand sidebar">
       <!-- Icon with themed color -->
-      <svg id="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg id="toggle-icon" class="rotated" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 17L20 12L15 7" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M4 12H19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M4 5V19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
-    <div id="chat-container">
+    <div id="chat-container" style="display: none;">
       <div id="messages"></div>
       <div id="input-row">
         <input id="user-input" type="text" placeholder="Ask a question..." />
@@ -208,7 +208,7 @@
     const input = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
     
-    let isCollapsed = false;
+    let isCollapsed = true;
 
     // --- Toggle Sidebar Functionality ---
     toggleBtn.addEventListener('click', () => {
