@@ -15,7 +15,7 @@ vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deseri
 
 llm = GeminiLLM(
     api_key="AIzaSyC__4SYJyttUSRsszBXAscUULwfDbiv84M",
-    model="gemini-2.5-flash
+    model="gemini-2.5-flash"
     ",
     temperature=0.0
 )
