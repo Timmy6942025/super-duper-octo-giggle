@@ -22,10 +22,12 @@ llm = GeminiLLM(
 )
 
 
-# Use GeminiLLM to decide if retrieval is needed
-SYSTEM_INSTRUCTION = (
-    "You are an AI assistant. If the user's question is a simple greeting, thanks, or about you, answer directly. "
-    "If the question requires information from documents or knowledge base, reply ONLY with: RETRIEVAL_NEEDED."
+
+SYSTEM_INTENT_CHECK = (
+    "Does this user question NOT require retrieval from the documents or knowledge base (for example, if it is a greeting, thank you, or meta-question)? Reply ONLY with YES or NO."
+)
+SYSTEM_MARKDOWN = (
+    "You are an AI assistant. Always format your answers using Markdown."
 )
 
 qa_chain = ConversationalRetrievalChain.from_llm(llm, vectorstore.as_retriever(search_kwargs={"k": 4}))
@@ -45,19 +47,21 @@ def ask():
 
 
 
-    # Let GeminiLLM decide if retrieval is needed
-    prompt = f"{SYSTEM_INSTRUCTION}\nUser: {question}"
-    llm_response = llm._call(prompt)
-    if "RETRIEVAL_NEEDED" in llm_response.upper():
-        # Use RAG
+
+    # Let GeminiLLM decide if this is a simple greeting/thanks/meta-question
+    intent_prompt = f"{SYSTEM_INTENT_CHECK}\nUser: {question}"
+    intent_response = llm._call(intent_prompt).strip().upper()
+    if intent_response == "YES":
+        # Use LLM direct answer for simple conversation/meta-questions
+        answer_prompt = f"{SYSTEM_MARKDOWN}\nUser: {question}"
+        answer = llm._call(answer_prompt).strip()
+        return jsonify({'answer': answer})
+    else:
+        # Use RAG for everything else
         result = qa_chain({'question': question, 'chat_history': chat_history})
         answer = result['answer']
         chat_history.append((question, answer))
         chat_history = chat_history[-10:]
-        return jsonify({'answer': answer})
-    else:
-        # Use LLM direct answer
-        answer = llm_response.strip()
         return jsonify({'answer': answer})
 
 
