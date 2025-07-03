@@ -6,6 +6,8 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.chat_models import ChatOpenAI
 from gemini_llm import GeminiLLM
+from langchain_core.tools import tool
+from langchain_core.messages import ToolMessage
 
 app = Flask(__name__)
 
@@ -18,6 +20,14 @@ llm = GeminiLLM(
     model="gemini-2.5-flash",
     temperature=0.0
 )
+
+
+# Use GeminiLLM to decide if retrieval is needed
+SYSTEM_INSTRUCTION = (
+    "You are an AI assistant. If the user's question is a simple greeting, thanks, or about you, answer directly. "
+    "If the question requires information from documents or knowledge base, reply ONLY with: RETRIEVAL_NEEDED."
+)
+
 qa_chain = ConversationalRetrievalChain.from_llm(llm, vectorstore.as_retriever(search_kwargs={"k": 4}))
 chat_history = []
 
@@ -33,11 +43,23 @@ def ask():
     if not question:
         return jsonify({'error': 'No question provided'}), 400
 
-    result = qa_chain({'question': question, 'chat_history': chat_history})
-    answer = result['answer']
-    chat_history.append((question, answer))
-    chat_history = chat_history[-10:]
-    return jsonify({'answer': answer})
+
+
+    # Let GeminiLLM decide if retrieval is needed
+    prompt = f"{SYSTEM_INSTRUCTION}\nUser: {question}"
+    llm_response = llm._call(prompt)
+    if "RETRIEVAL_NEEDED" in llm_response.upper():
+        # Use RAG
+        result = qa_chain({'question': question, 'chat_history': chat_history})
+        answer = result['answer']
+        chat_history.append((question, answer))
+        chat_history = chat_history[-10:]
+        return jsonify({'answer': answer})
+    else:
+        # Use LLM direct answer
+        answer = llm_response.strip()
+        return jsonify({'answer': answer})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

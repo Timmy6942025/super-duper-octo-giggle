@@ -1,6 +1,6 @@
 1.
       pip install langchain
-
+      pip install langchain-google-genai
 
 1. In the terminal, run:
    python ingest.py
