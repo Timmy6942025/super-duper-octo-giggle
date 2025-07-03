@@ -240,6 +240,7 @@
   <!-- <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> -->
 
     // --- Handle Sending a Message ---
+
     async function sendMessage() {
       const question = input.value.trim();
       if (!question) return;
@@ -248,17 +249,45 @@
       input.value = '';
       input.focus();
 
+      // Create a new message bubble for streaming
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'msg-bubble msg-ai';
+      msgs.appendChild(aiMsg);
+      msgs.scrollTop = msgs.scrollHeight;
+
       try {
         const response = await fetch('/ask', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question: question })
         });
-        const data = await response.json();
-        appendMessage(data.answer, 'ai');
+
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          // JSON response (should not happen now, but fallback)
+          const data = await response.json();
+          aiMsg.textContent = data.answer;
+        } else if (contentType.includes('text/plain')) {
+          // Streaming response
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let done = false;
+          let buffer = '';
+          while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+            if (value) {
+              buffer += decoder.decode(value, { stream: true });
+              aiMsg.textContent = buffer;
+              msgs.scrollTop = msgs.scrollHeight;
+            }
+          }
+        } else {
+          aiMsg.textContent = 'Sorry, something went wrong. Please try again.';
+        }
       } catch (error) {
         console.error('Error:', error);
-        appendMessage('Sorry, something went wrong. Please try again.', 'ai');
+        aiMsg.textContent = 'Sorry, something went wrong. Please try again.';
       }
     }
 

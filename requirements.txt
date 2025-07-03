@@ -1,4 +1,5 @@
-
+google-generativeai
+pymupdf
 flask
 langchain
 langchain-community
@@ -7,5 +8,4 @@ faiss-cpu
 sentence-transformers
 requests
 pydantic
-# Only needed if you want to use Google Generative AI official integration
 # langchain-google-genai
