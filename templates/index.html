@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Through the Bible Chat</title>
+  <title>TTB Chat</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -229,11 +229,24 @@
       }
     });
     
+    // --- Simple markdown parser ---
+    function parseMarkdown(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/\n/g, '<br>');
+    }
+
     // --- Append a new message to the chat ---
     function appendMessage(text, sender) {
       const messageElement = document.createElement('div');
       messageElement.className = `msg-bubble msg-${sender}`;
-      messageElement.textContent = text;
+      if (sender === 'ai') {
+        messageElement.innerHTML = parseMarkdown(text);
+      } else {
+        messageElement.textContent = text;
+      }
       msgs.appendChild(messageElement);
       msgs.scrollTop = msgs.scrollHeight;
     }
@@ -266,7 +279,7 @@
         if (contentType.includes('application/json')) {
           // JSON response (should not happen now, but fallback)
           const data = await response.json();
-          aiMsg.textContent = data.answer;
+          aiMsg.innerHTML = parseMarkdown(data.answer);
         } else if (contentType.includes('text/plain')) {
           // Streaming response
           const reader = response.body.getReader();
@@ -278,7 +291,7 @@
             done = doneReading;
             if (value) {
               buffer += decoder.decode(value, { stream: true });
-              aiMsg.textContent = buffer;
+              aiMsg.innerHTML = parseMarkdown(buffer);
               msgs.scrollTop = msgs.scrollHeight;
             }
           }
