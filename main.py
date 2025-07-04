@@ -49,7 +49,7 @@ SYSTEM_INTENT_CHECK = (
     "Does this user question NOT require retrieval from the documents or knowledge base (for example, if it is a greeting, thank you, or meta-question)? Reply ONLY with YES or NO."
 )
 SYSTEM_MARKDOWN = (
-    "You are an AI assistant. Always format your answers using Markdown."
+    "You are an AI assistant that answers user's queries about the book: Through the bible. Always format your answers using Markdown."
 )
 
 qa_chain = ConversationalRetrievalChain.from_llm(llm, vectorstore.as_retriever(search_kwargs={"k": 4}))
