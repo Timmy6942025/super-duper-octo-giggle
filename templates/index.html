@@ -15,6 +15,16 @@
       --background-color: #fffbf2; /* A lighter version of the secondary color */
       --text-color: #3d2a00;
       --sidebar-bg: #ffffff;
+      --input-bg: #fffbf2;
+    }
+
+    body.dark {
+      --primary-color: #fce4b1;
+      --secondary-color: #2a1a00;
+      --background-color: #1a1510;
+      --text-color: #fce4b1;
+      --sidebar-bg: #23201b;
+      --input-bg: #23201b;
     }
 
     /* --- General Styles --- */
@@ -25,6 +35,7 @@
       font-family: 'Inter', sans-serif;
       background-color: var(--background-color);
       color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
     }
 
     /* --- PDF Viewer --- */
@@ -142,7 +153,7 @@
       font-size: 0.95rem;
       font-family: 'Inter', sans-serif;
       outline: none;
-      background-color: var(--background-color);
+      background-color: var(--input-bg);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
@@ -240,6 +251,33 @@
         transform: scale(1.2);
       }
     }
+
+    /* --- Theme Toggle Button --- */
+    #theme-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      margin: 0 6px;
+      transition: background 0.2s;
+    }
+
+    #theme-btn:hover {
+      background: #f0ebe0;
+    }
+
+    body.dark #theme-btn:hover {
+      background: #2a1a00;
+    }
+
+    #theme-icon {
+      transition: filter 0.3s;
+    }
+
+    body.dark #theme-icon {
+      filter: invert(1) brightness(1.2);
+    }
   </style>
 </head>
 <body>
@@ -254,6 +292,12 @@
           <path d="M15 17L20 12L15 7" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M4 12H19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M4 5V19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="theme-btn" title="Toggle light/dark mode" style="background:none;border:none;cursor:pointer;padding:6px;border-radius:50%;margin:0 6px;transition:background 0.2s;">
+        <svg id="theme-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
         </svg>
       </button>
       <button id="clear-btn" title="Clear Chat" style="max-width: 120px; width: 100%; overflow: hidden; text-overflow: ellipsis;">Clear Chat</button>
@@ -279,8 +323,11 @@
     const input = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
     const clearBtn = document.getElementById('clear-btn');
-    
+    const themeBtn = document.getElementById('theme-btn');
+    const themeIcon = document.getElementById('theme-icon');
+
     let isCollapsed = true;
+    let isDarkTheme = false;
 
     // --- Toggle Sidebar Functionality ---
     toggleBtn.addEventListener('click', () => {
@@ -396,6 +443,26 @@
       }
     });
 
+    // --- Theme Toggle Functionality ---
+    function setTheme(dark) {
+      document.body.classList.toggle('dark', dark);
+      // Change icon: sun for light, moon for dark
+      if (dark) {
+        themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/>';
+        themeIcon.setAttribute('viewBox', '0 0 24 24');
+      } else {
+        themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+        themeIcon.setAttribute('viewBox', '0 0 24 24');
+      }
+    }
+    // Load theme from localStorage
+    let darkTheme = localStorage.getItem('theme') === 'dark';
+    setTheme(darkTheme);
+    themeBtn.addEventListener('click', () => {
+      darkTheme = !darkTheme;
+      setTheme(darkTheme);
+      localStorage.setItem('theme', darkTheme ? 'dark' : 'light');
+    });
     // --- Event Listeners ---
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keydown', (e) => {
