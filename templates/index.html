@@ -49,6 +49,15 @@
       border: none;
     }
 
+    body.dark #pdf-viewer iframe {
+      filter: invert(0.93) hue-rotate(180deg) contrast(0.95) brightness(0.95);
+      background: #23201b;
+      transition: filter 0.3s;
+    }
+    body.dark #pdf-viewer {
+      background: #23201b;
+    }
+
     /* --- Sidebar --- */
     #sidebar {
       width: 400px;
