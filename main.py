@@ -89,6 +89,11 @@ def ask():
                 time.sleep(0.03)
         return Response(stream_rag_answer(), mimetype='text/plain')
 
+@app.route('/clear_chat', methods=['POST'])
+def clear_chat():
+    global chat_history
+    chat_history = []
+    return ('', 204)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

@@ -49,6 +49,11 @@
       overflow: hidden;
     }
 
+    #sidebar > div:first-child { /* top bar with buttons */
+      width: 100%;
+      min-width: 0;
+    }
+
     /* --- Toggle Button --- */
     #toggle-btn {
       background: none;
@@ -157,7 +162,9 @@
       align-items: center;
       justify-content: center;
       transition: background-color 0.2s, transform 0.1s;
-      color: white; /* Set icon color to white */
+      color: white;
+      min-width: 44px;
+      min-height: 44px;
     }
 
     #send-btn:hover {
@@ -172,6 +179,35 @@
       width: 24px;
       height: 24px;
     }
+
+    /* --- Clear Chat Button --- */
+    #clear-btn {
+      margin-left: 0;
+      padding: 0 10px;
+      height: 32px;
+      background: #e0d5b9;
+      color: #660000;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 400;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      white-space: nowrap;
+      line-height: 1;
+      vertical-align: middle;
+      margin-top: 0;
+      transition: opacity 0.2s;
+      max-width: 120px;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #clear-btn.hide { opacity: 0; pointer-events: none; }
 
     /* --- Loading Animation --- */
     .loading-dots {
@@ -211,14 +247,17 @@
     <iframe src="/static/TTB.pdf" width="100%" height="100%"></iframe>
   </div>
   <div id="sidebar" style="width: 60px;">
-    <button id="toggle-btn" title="Expand sidebar">
-      <!-- Icon with themed color -->
-      <svg id="toggle-icon" class="rotated" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M15 17L20 12L15 7" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M4 12H19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M4 5V19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin: 12px 8px 0 8px; min-width: 0;">
+      <button id="toggle-btn" title="Expand sidebar" style="margin-left:0;">
+        <!-- Icon with themed color -->
+        <svg id="toggle-icon" class="rotated" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 17L20 12L15 7" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 12H19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 5V19" stroke="#660000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="clear-btn" title="Clear Chat" style="max-width: 120px; width: 100%; overflow: hidden; text-overflow: ellipsis;">Clear Chat</button>
+    </div>
     <div id="chat-container" style="display: none;">
       <div id="messages"></div>
       <div id="input-row">
@@ -239,27 +278,31 @@
     const msgs = document.getElementById('messages');
     const input = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
+    const clearBtn = document.getElementById('clear-btn');
     
     let isCollapsed = true;
 
     // --- Toggle Sidebar Functionality ---
     toggleBtn.addEventListener('click', () => {
       isCollapsed = !isCollapsed;
-
       toggleIcon.classList.toggle('rotated');
-
+      const clearBtn = document.getElementById('clear-btn');
       if (isCollapsed) {
         // --- Collapse the sidebar ---
         sidebar.style.width = '60px';
         chatContainer.style.display = 'none';
         toggleBtn.title = 'Expand sidebar';
+        clearBtn.classList.add('hide');
       } else {
         // --- Expand the sidebar ---
         sidebar.style.width = '400px';
         chatContainer.style.display = 'flex';
         toggleBtn.title = 'Collapse sidebar';
+        clearBtn.classList.remove('hide');
       }
     });
+    // On load, hide clear chat if collapsed
+    if (isCollapsed) document.getElementById('clear-btn').classList.add('hide');
     
     // --- Simple markdown parser ---
     function parseMarkdown(text) {
@@ -343,6 +386,16 @@
       }
     }
 
+    // --- Clear Chat Functionality ---
+    clearBtn.addEventListener('click', async () => {
+      msgs.innerHTML = '';
+      try {
+        await fetch('/clear_chat', { method: 'POST' });
+      } catch (e) {
+        console.error('Failed to clear chat history on server:', e);
+      }
+    });
+
     // --- Event Listeners ---
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keydown', (e) => {
@@ -351,7 +404,6 @@
         sendMessage();
       }
     });
-
   </script>
 </body>
 </html>
