@@ -12,7 +12,7 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=15
 docs = text_splitter.split_documents(documents)
 print(f"Split the document into {len(docs)} chunks.")
 
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
 
 print("Creating vector store... This may take a moment.")
 vectorstore = FAISS.from_documents(docs, embeddings)
