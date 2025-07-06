@@ -34,7 +34,7 @@ def stream_gemini_response(prompt):
         yield f"Error: {e}"
 
 
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
 vectorstore = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 
 llm = GeminiLLM(
