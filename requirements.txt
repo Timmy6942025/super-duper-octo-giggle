@@ -7,5 +7,4 @@ langchain-core
 faiss-cpu
 sentence-transformers
 requests
-pydantic
-# langchain-google-genai
+gunicorn
