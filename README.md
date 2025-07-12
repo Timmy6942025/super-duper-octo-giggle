@@ -12,6 +12,6 @@ ctrl+c in terminal to stop the app
 
 models: 
 
--embeddings model: all-MiniLM-L6-v2
+-embeddings model: BAAI/bge-m3
 
 -executer model: Gemini-2.5-flash
